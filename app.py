@@ -41,15 +41,15 @@ async def get_xml():
         return content
 
 
-@app.post("/xml_to_train/{tenant}/{property_name}")
-async def to_train_xml_file(tenant, property_name, file: UploadFile = File(...)):
-    print(to_train_xml_file, tenant, property_name)
+@app.post("/xml_to_train/{tenant}/{extractor_id}")
+async def to_train_xml_file(tenant, extractor_id, file: UploadFile = File(...)):
+    print(to_train_xml_file, tenant, extractor_id)
     return "xml_to_train saved"
 
 
-@app.post("/xml_to_predict/{tenant}/{property_name}")
-async def to_predict_xml_file(tenant, property_name, file: UploadFile = File(...)):
-    print(to_predict_xml_file, tenant, property_name)
+@app.post("/xml_to_predict/{tenant}/{extractor_id}")
+async def to_predict_xml_file(tenant, extractor_id, file: UploadFile = File(...)):
+    print(to_predict_xml_file, tenant, extractor_id)
     return "xml_to_train saved"
 
 
@@ -74,8 +74,8 @@ async def prediction_data_post(prediction_data: PredictionData):
     return "prediction data saved"
 
 
-@app.get("/get_suggestions/{tenant}/{property_name}")
-async def get_suggestions(tenant: str, property_name: str):
+@app.get("/get_suggestions/{tenant}/{extractor_id}")
+async def get_suggestions(tenant: str, extractor_id: str):
     if exists(data_path):
         with open(data_path, "r") as file:
             predictions_data = json.load(file)
@@ -87,7 +87,7 @@ async def get_suggestions(tenant: str, property_name: str):
         suggestions_list.append(
             Suggestion(
                 tenant=tenant,
-                property_name=property_name,
+                id=extractor_id,
                 xml_file_name=prediction_data["xml_file_name"],
                 text="2023",
                 segment_text="2023",
