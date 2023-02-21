@@ -1,10 +1,12 @@
 *.pyc
 *.pyo
 .DS_Store
-.idea
+/.idea/
 .vscode
 *.log
 nohup.out
 *.cache
 **/*.pytest_cache
 src/.pytest_cache
+/venv/
+/__pycache__/
