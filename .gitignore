@@ -8,5 +8,6 @@ nohup.out
 *.cache
 **/*.pytest_cache
 src/.pytest_cache
-/venv/
+/.idea/
 /__pycache__/
+/venv/
