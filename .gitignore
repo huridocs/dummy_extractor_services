@@ -1,7 +1,7 @@
 *.pyc
 *.pyo
 .DS_Store
-.idea
+/.idea/
 .vscode
 *.log
 nohup.out
@@ -10,3 +10,4 @@ nohup.out
 src/.pytest_cache
 /.idea/
 /__pycache__/
+/venv/
