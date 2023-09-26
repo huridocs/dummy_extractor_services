@@ -25,7 +25,7 @@ class QueueProcessor:
     def process(self, id, message, rc, ts):
         task = MetadataExtractionTask(**message)
 
-        data_url = f"http://localhost:5056/get_suggestions/{task.tenant}/{task.params.id}"
+        data_url = f"http://127.0.0.1:5056/get_suggestions/{task.tenant}/{task.params.id}"
 
         model_results_message = ResultsMessage(
             tenant=task.tenant,
