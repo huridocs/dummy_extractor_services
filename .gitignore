@@ -10,3 +10,4 @@ nohup.out
 src/.pytest_cache
 /__pycache__/
 /venv/
+data.json

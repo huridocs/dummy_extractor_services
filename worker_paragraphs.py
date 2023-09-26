@@ -25,7 +25,7 @@ class QueueProcessor:
     def process(self, id, message, rc, ts):
         task = Task(**message)
         print(task.dict())
-        service_url = f"http://localhost:5051"
+        service_url = f"http://127.0.0.1:5051"
         results_url = f"{service_url}/get_paragraphs/{task.tenant}/{task.params.filename}"
         file_results_url = f"{service_url}/get_xml/{task.tenant}/{task.params.filename}"
         extraction_message = ExtractionMessage(
