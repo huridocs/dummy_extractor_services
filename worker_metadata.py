@@ -27,8 +27,9 @@ class QueueProcessor:
     def process(self, id, message, rc, ts):
         task = MetadataExtractionTask(**message)
 
-        if task.options:
-            options_path.write_text(json.dumps(task.options))
+        if task.params.options:
+            options = task.params.options if task.params.multi_value else task.params.options[-1]
+            options_path.write_text(json.dumps(options))
 
         data_url = f"http://127.0.0.1:5056/get_suggestions/{task.tenant}/{task.params.id}"
 
