@@ -2,6 +2,7 @@ import json
 import os
 import sys
 from os.path import exists
+from pathlib import Path
 
 from fastapi import FastAPI, UploadFile, File
 from starlette.responses import PlainTextResponse
@@ -14,7 +15,8 @@ from data.Suggestion import Suggestion
 
 app = FastAPI()
 
-data_path = "data.json"
+data_path = Path("data.json")
+options_path = Path("options.json")
 
 
 @app.get("/info")
@@ -60,41 +62,36 @@ async def labeled_data_post(labeled_data: LabeledData):
 
 @app.post("/prediction_data")
 async def prediction_data_post(prediction_data: PredictionData):
-    if exists(data_path):
-        with open(data_path, "r") as file:
-            predictions_data = json.load(file)
-    else:
-        predictions_data = list()
-
+    predictions_data = json.loads(data_path.read_text()) if exists(data_path) else list()
     predictions_data.append(prediction_data.dict())
-
-    with open(data_path, "w") as file:
-        json.dump(predictions_data, file)
-
+    data_path.write_text(json.dumps(predictions_data))
     return "prediction data saved"
 
 
 @app.get("/get_suggestions/{tenant}/{extractor_id}")
 async def get_suggestions(tenant: str, extractor_id: str):
-    if exists(data_path):
-        with open(data_path, "r") as file:
-            predictions_data = json.load(file)
-    else:
-        predictions_data = list()
+    predictions_data = json.loads(data_path.read_text()) if exists(data_path) else list()
 
     suggestions_list: list[dict[str, str]] = list()
+    options = json.loads(options_path.read_text()) if exists(options_path) else list()
     for prediction_data in predictions_data:
         suggestions_list.append(
             Suggestion(
                 tenant=tenant,
                 id=extractor_id,
                 xml_file_name=prediction_data["xml_file_name"],
-                text="2023",
-                segment_text="2023",
+                text="2023" if not options else ' '.join([option.label for option in options]),
+                options=options,
+                segment_text="2023" if not options else ' '.join([option.label for option in options]),
                 page_number=1,
                 segments_boxes=[SegmentBox(left=0, top=0, width=250, height=250, page_number=1)],
             ).dict()
         )
 
-    os.remove(data_path)
+    if exists(data_path):
+        os.remove(data_path)
+
+    if exists(options_path):
+        os.remove(options_path)
+
     return json.dumps(suggestions_list)

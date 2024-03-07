@@ -1,9 +1,11 @@
+import json
 from time import sleep
 
 import redis
 from rsmq.consumer import RedisSMQConsumer
 from rsmq import RedisSMQ, cmd
 
+from app import options_path
 from data.MetadataExtractionTask import MetadataExtractionTask
 from data.ResultsMessage import ResultsMessage
 
@@ -24,6 +26,9 @@ class QueueProcessor:
 
     def process(self, id, message, rc, ts):
         task = MetadataExtractionTask(**message)
+
+        if task.options:
+            options_path.write_text(json.dumps(task.options))
 
         data_url = f"http://127.0.0.1:5056/get_suggestions/{task.tenant}/{task.params.id}"
 
