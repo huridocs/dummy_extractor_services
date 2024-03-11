@@ -18,8 +18,5 @@ jobs:
         run: make install_venv
 
       - name: Start service
-        run: make start > logs.log &
+        run: make start
       - run: sleep 5 && wget --waitretry=5 --retry-connrefused -v http://localhost:5051/info
-      - name: Log on failure
-        if: ${{ failure() }}
-        run: cat dummy_extractor_services/logs.log
