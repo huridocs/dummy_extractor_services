@@ -1,0 +1,25 @@
+# This workflow will install Python dependencies, run tests and lint with a single version of Python
+# For more information see: https://help.github.com/actions/language-and-framework-guides/using-python-with-github-actions
+
+name: Test
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install venv
+        run: make install_venv
+
+      - name: Start service
+        run: make start > logs.log &
+      - run: sleep 5 && wget --waitretry=5 --retry-connrefused -v http://localhost:5051/info
+      - name: Log on failure
+        if: ${{ failure() }}
+        run: cat dummy_extractor_services/logs.log
