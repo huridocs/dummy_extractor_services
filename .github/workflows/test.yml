@@ -23,5 +23,5 @@ jobs:
         run: make install_venv
 
       - name: Start service
-        run: make start > logs.log &
+        run: make start > /dev/null &
       - run: sleep 5 && wget --waitretry=5 --retry-connrefused -v http://127.0.0.1:5051/info
