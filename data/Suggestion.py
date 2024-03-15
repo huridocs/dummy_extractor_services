@@ -11,7 +11,7 @@ class Suggestion(BaseModel):
     id: str
     xml_file_name: str
     text: str = ""
-    options: List[Option] = list()
+    values: List[Option] = list()
     segment_text: str
     page_number: int
     segments_boxes: List[SegmentBox]

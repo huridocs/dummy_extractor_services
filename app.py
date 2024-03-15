@@ -73,16 +73,17 @@ async def get_suggestions(tenant: str, extractor_id: str):
     predictions_data = json.loads(data_path.read_text()) if exists(data_path) else list()
 
     suggestions_list = list()
-    options = json.loads(options_path.read_text()) if exists(options_path) else list()
+    values = json.loads(options_path.read_text()) if exists(options_path) else list()
+
     for prediction_data in predictions_data:
         suggestions_list.append(
             Suggestion(
                 tenant=tenant,
                 id=extractor_id,
                 xml_file_name=prediction_data["xml_file_name"],
-                text="2023" if not options else ' '.join([option.label for option in options]),
-                options=options,
-                segment_text="2023" if not options else ' '.join([option.label for option in options]),
+                text="2023" if not values else ' '.join([option.label for option in values]),
+                values=values,
+                segment_text="2023" if not values else ' '.join([option.label for option in values]),
                 page_number=1,
                 segments_boxes=[SegmentBox(left=0, top=0, width=250, height=250, page_number=1)],
             ).dict()
