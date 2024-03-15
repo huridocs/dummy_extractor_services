@@ -72,7 +72,7 @@ async def prediction_data_post(prediction_data: PredictionData):
 async def get_suggestions(tenant: str, extractor_id: str):
     predictions_data = json.loads(data_path.read_text()) if exists(data_path) else list()
 
-    suggestions_list: list[dict[str, str]] = list()
+    suggestions_list = list()
     options = json.loads(options_path.read_text()) if exists(options_path) else list()
     for prediction_data in predictions_data:
         suggestions_list.append(
