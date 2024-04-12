@@ -9,9 +9,10 @@ from data.SegmentBox import SegmentBox
 class Suggestion(BaseModel):
     tenant: str
     id: str
-    xml_file_name: str
+    xml_file_name: str = ""
+    entity_name: str = ""
     text: str = ""
     values: List[Option] = list()
-    segment_text: str
-    page_number: int
-    segments_boxes: List[SegmentBox]
+    segment_text: str = ""
+    page_number: int = 1
+    segments_boxes: List[SegmentBox] = list()
