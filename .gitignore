@@ -13,3 +13,4 @@ src/.pytest_cache
 data.json
 **/__pycache__
 **/*.pyc
+/.venv/
