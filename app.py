@@ -1,5 +1,6 @@
 import json
 import os
+import random
 import sys
 from os.path import exists
 from pathlib import Path
@@ -16,7 +17,7 @@ from data.Suggestion import Suggestion
 app = FastAPI()
 
 data_path = Path("data.json")
-options_path = Path("options.json")
+params_path = Path("options.json")
 
 
 @app.get("/info")
@@ -73,9 +74,13 @@ async def get_suggestions(tenant: str, extractor_id: str):
     predictions_data = json.loads(data_path.read_text()) if exists(data_path) else list()
 
     suggestions_list = list()
-    values = json.loads(options_path.read_text()) if exists(options_path) else list()
+    params = json.loads(params_path.read_text()) if exists(params_path) else dict()
+    all_values = params["options"] if params and "options" in params else list()
+    multi_value = params["multi_value"] if params and "multi_value" in params else False
 
     for prediction_data in predictions_data:
+        values_count = random.randint(1, len(all_values)) if multi_value else 1
+        values = random.sample(all_values, k=values_count) if all_values else list()
         suggestions_list.append(
             Suggestion(
                 tenant=tenant,
@@ -93,7 +98,7 @@ async def get_suggestions(tenant: str, extractor_id: str):
     if exists(data_path):
         os.remove(data_path)
 
-    if exists(options_path):
-        os.remove(options_path)
+    if exists(params_path):
+        os.remove(params_path)
 
     return json.dumps(suggestions_list)
