@@ -28,7 +28,7 @@ class QueueProcessor:
         task = MetadataExtractionTask(**message)
 
         if task.params.options:
-            params_path.write_text(json.dumps(task.params))
+            params_path.write_text(task.params.model_dump_json())
 
         data_url = f"http://127.0.0.1:5056/get_suggestions/{task.tenant}/{task.params.id}"
 

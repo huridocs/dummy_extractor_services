@@ -17,7 +17,7 @@ from data.Suggestion import Suggestion
 app = FastAPI()
 
 data_path = Path("data.json")
-params_path = Path("options.json")
+params_path = Path("params.json")
 
 
 @app.get("/info")
