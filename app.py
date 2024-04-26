@@ -87,9 +87,9 @@ async def get_suggestions(tenant: str, extractor_id: str):
                 id=extractor_id,
                 xml_file_name=prediction_data["xml_file_name"],
                 entity_name=prediction_data["entity_name"],
-                text="2023" if not values else ' '.join([option.label for option in values]),
+                text="2023" if not values else ' '.join([option["label"] for option in values]),
                 values=values,
-                segment_text="2023" if not values else ' '.join([option.label for option in values]),
+                segment_text="2023" if not values else ' '.join([option["label"] for option in values]),
                 page_number=1,
                 segments_boxes=[SegmentBox(left=0, top=0, width=250, height=250, page_number=1)],
             ).dict()
