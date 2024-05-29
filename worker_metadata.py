@@ -30,6 +30,8 @@ class QueueProcessor:
             qname="information_extraction_logs",
         )
 
+        self.logs_queue.createQueue().exceptions(False).execute()
+
     def process(self, id, message, rc, ts):
         task = MetadataExtractionTask(**message)
 
