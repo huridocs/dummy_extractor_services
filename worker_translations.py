@@ -4,8 +4,9 @@ import redis
 from rsmq.consumer import RedisSMQConsumer
 from rsmq import RedisSMQ, cmd
 
-from data.ExtractionMessage import ExtractionMessage
-from data.Task import Task
+from data.Translation import Translation
+from data.TranslationResponseMessage import TranslationResponseMessage
+from data.TranslationTaskMessage import TranslationTaskMessage
 
 
 class QueueProcessor:
@@ -13,42 +14,37 @@ class QueueProcessor:
         self.task_queue = RedisSMQ(
             host="127.0.0.1",
             port=6379,
-            qname="segmentation_tasks",
+            qname="translations_tasks",
         )
 
         self.results_queue = RedisSMQ(
             host="127.0.0.1",
             port=6379,
-            qname="segmentation_results",
+            qname="translations_results",
         )
 
     def process(self, id, message, rc, ts):
-        task = Task(**message)
+        task = TranslationTaskMessage(**message)
         print(task.dict())
-        service_url = f"http://127.0.0.1:5051"
-        results_url = f"{service_url}/get_paragraphs/{task.tenant}/{task.params.filename}"
-        file_results_url = f"{service_url}/get_xml/{task.tenant}/{task.params.filename}"
-        extraction_message = ExtractionMessage(
-            tenant=task.tenant,
-            task=task.task,
-            params=task.params,
-            success=True,
-            data_url=results_url,
-            file_url=file_results_url,
+
+        translations: list[Translation] = [self.get_translation(task, language) for language in task.languages_to]
+        response = TranslationResponseMessage(
+            **task.dict(),
+            translations=translations,
         )
 
-        self.results_queue.sendMessage(delay=5).message(extraction_message.dict()).execute()
+        self.results_queue.sendMessage(delay=5).message(response.dict()).execute()
         return True
 
     def subscribe_to_tasks_queue(self):
-        print("Paragraphs queue processor started")
+        print("Translation queue processor started")
         while True:
             try:
                 self.task_queue.getQueueAttributes().exec_command()
                 self.results_queue.getQueueAttributes().exec_command()
 
                 redis_smq_consumer = RedisSMQConsumer(
-                    qname="segmentation_tasks",
+                    qname="translations_tasks",
                     processor=self.process,
                     host="127.0.0.1",
                     port=6379,
@@ -59,6 +55,14 @@ class QueueProcessor:
             except cmd.exceptions.QueueDoesNotExist:
                 self.task_queue.createQueue().exceptions(False).execute()
                 self.results_queue.createQueue().exceptions(False).execute()
+
+    @staticmethod
+    def get_translation(translation_task_message: TranslationTaskMessage, language: str) -> Translation:
+        if language == "error":
+            return Translation(text="", language=language, success=False, error_message="service error")
+
+        text = f"[translation for {language}] {translation_task_message.text}"
+        return Translation(text=text, language=language, success=False, error_message="")
 
 
 if __name__ == "__main__":

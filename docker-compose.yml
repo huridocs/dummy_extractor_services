@@ -1,0 +1,9 @@
+services:
+  dummy_extractor_services:
+    container_name: dummy_extractor_services
+    init: true
+    restart: unless-stopped
+    build:
+      context: .
+      dockerfile: Dockerfile
+    network_mode: "host"

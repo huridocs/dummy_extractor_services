@@ -82,6 +82,7 @@ class QueueProcessor:
         self.logs_queue.sendMessage().message(log_message.dump()).execute()
 
     def subscribe_to_tasks_queue(self):
+        print("Metadata extractor queue processor started")
         while True:
             try:
                 self.task_queue.getQueueAttributes().exec_command()
