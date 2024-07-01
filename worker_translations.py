@@ -25,15 +25,15 @@ class QueueProcessor:
 
     def process(self, id, message, rc, ts):
         task = TranslationTaskMessage(**message)
-        print(task.dict())
+        print(task.model_dump())
 
         translations: list[Translation] = [self.get_translation(task, language) for language in task.languages_to]
         response = TranslationResponseMessage(
-            **task.dict(),
+            **task.model_dump(),
             translations=translations,
         )
 
-        self.results_queue.sendMessage(delay=5).message(response.dict()).execute()
+        self.results_queue.sendMessage(delay=5).message(response.model_dump()).execute()
         return True
 
     def subscribe_to_tasks_queue(self):

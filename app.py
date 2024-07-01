@@ -46,13 +46,13 @@ async def get_xml():
 
 @app.post("/xml_to_train/{tenant}/{extractor_id}")
 async def to_train_xml_file(tenant, extractor_id, file: UploadFile = File(...)):
-    print(to_train_xml_file, tenant, extractor_id)
+    print("received file to train", tenant, extractor_id)
     return "xml_to_train saved"
 
 
 @app.post("/xml_to_predict/{tenant}/{extractor_id}")
 async def to_predict_xml_file(tenant, extractor_id, file: UploadFile = File(...)):
-    print(to_predict_xml_file, tenant, extractor_id)
+    print("received file to predict", tenant, extractor_id)
     return "xml_to_train saved"
 
 
