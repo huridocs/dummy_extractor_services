@@ -7,6 +7,6 @@ class TranslationResponseMessage(TranslationTaskMessage):
 
 
 if __name__ == '__main__':
-    t = TranslationTaskMessage(namespace="namespace", key="key", text="text", language_from="language_from", languages_to=["languages_to"])
-    a = TranslationResponseMessage(**t.dict(), translations=[])
+    t = TranslationTaskMessage(key=["key"], text="text", language_from="language_from", languages_to=["languages_to"])
+    a = TranslationResponseMessage(**t.model_dump(), translations=[])
     print(a)
