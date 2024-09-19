@@ -1,6 +1,6 @@
 FROM python:3.12.4-slim-bullseye
 
-RUN apt-get update && apt-get install make
+RUN apt-get update && apt-get install make git -y
 RUN addgroup --system python && adduser --system --group python
 RUN mkdir opt/app
 RUN chown -R python:python opt/app
