@@ -4,6 +4,7 @@ import random
 import sys
 from os.path import exists
 from pathlib import Path
+from time import sleep
 
 from fastapi import FastAPI, UploadFile, File
 from starlette.responses import PlainTextResponse
@@ -92,7 +93,7 @@ async def get_suggestions(tenant: str, extractor_id: str):
                 segment_text="2023" if not values else ' '.join([option["label"] for option in values]),
                 page_number=1,
                 segments_boxes=[SegmentBox(left=0, top=0, width=250, height=250, page_number=1)],
-            ).dict()
+            ).model_dump()
         )
 
     if exists(data_path):
@@ -101,4 +102,5 @@ async def get_suggestions(tenant: str, extractor_id: str):
     if exists(params_path):
         os.remove(params_path)
 
+    sleep(5)
     return json.dumps(suggestions_list)

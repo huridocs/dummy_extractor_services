@@ -18,6 +18,7 @@ RUN pip --default-timeout=1000 install -r requirements.txt
 
 COPY ./data ./data
 COPY app.py app.py
+COPY test.xml test.xml
 COPY worker_metadata.py worker_metadata.py
 COPY worker_paragraphs.py worker_paragraphs.py
 COPY worker_translations.py worker_translations.py
