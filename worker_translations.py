@@ -23,7 +23,7 @@ def get_translation(translation_task_message: TranslationTaskMessage, language: 
         return Translation(text="", language=language, success=False, error_message="service error")
 
     text = f"[translation for {language}] {translation_task_message.text}"
-    return Translation(text=text, language=language, success=False, error_message="")
+    return Translation(text=text, language=language, success=True, error_message="")
 
 
 if __name__ == "__main__":
