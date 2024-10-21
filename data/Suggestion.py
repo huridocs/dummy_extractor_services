@@ -13,7 +13,7 @@ class Suggestion(BaseModel):
     entity_name: str = ""
     text: str = ""
     values: List[Option] = list()
-    empty_suggestion: bool = False
+    # empty_suggestion: bool = False
     segment_text: str = ""
     page_number: int = 1
     segments_boxes: List[SegmentBox] = list()
