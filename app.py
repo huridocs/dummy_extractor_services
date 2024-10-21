@@ -73,7 +73,7 @@ async def labeled_data_post(labeled_data: LabeledData):
 @app.post("/prediction_data")
 async def prediction_data_post(prediction_data: PredictionData):
     predictions_data = json.loads(data_path.read_text()) if exists(data_path) else list()
-    predictions_data.append(prediction_data.dict())
+    predictions_data.append(prediction_data.model_dump())
     data_path.write_text(json.dumps(predictions_data))
     return "prediction data saved"
 

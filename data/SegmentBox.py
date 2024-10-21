@@ -9,7 +9,7 @@ class SegmentBox(BaseModel):
     width: float = 3
     height: float = 4
     page_number: int = 1
-    page_width: int = 600
-    page_height: int = 800
-    text: str = ""
-    type: TokenType = TokenType.TEXT
+    # page_width: int = 600
+    # page_height: int = 800
+    # text: str = ""
+    # type: str = "TEXT"
