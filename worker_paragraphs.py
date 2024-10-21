@@ -15,13 +15,13 @@ def process(message):
         params=task.params,
         success=True,
         data_url=results_url,
-        file_url=file_results_url,
+        file_url=file_results_url if task.task != "extraction" else "",
     )
 
     return extraction_message.model_dump()
 
 
 if __name__ == "__main__":
-    queues_names = ["segmentation", "development_segmentation"]
+    queues_names = ["segmentation", "development_segmentation", "extraction", "development_extraction"]
     queue_processor = QueueProcessor("127.0.0.1", 6379, queues_names)
     queue_processor.start(process)

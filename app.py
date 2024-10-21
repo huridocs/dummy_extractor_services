@@ -30,12 +30,20 @@ async def info():
 async def async_extraction(tenant, file: UploadFile = File(...)):
     return "task registered"
 
+@app.post("/set_paragraphs")
+async def set_paragraphs(extraction_data: ExtractionData):
+    return "paragraphs saved"
+
 
 @app.get("/get_paragraphs/{tenant}/{pdf_file_name}")
 async def get_paragraphs(tenant: str, pdf_file_name: str):
     print("get_paragraphs", tenant, pdf_file_name)
-    extraction_data = ExtractionData(tenant=tenant, file_name=pdf_file_name, paragraphs=[], page_height=0, page_width=0)
-    return extraction_data.json()
+    extraction_data = ExtractionData(tenant=tenant,
+                                     file_name=pdf_file_name,
+                                     paragraphs=[SegmentBox()],
+                                     page_height=0,
+                                     page_width=0)
+    return extraction_data.model_dump_json()
 
 
 @app.get("/get_xml/{tenant}/{pdf_file_name}", response_class=PlainTextResponse)

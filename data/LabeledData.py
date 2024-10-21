@@ -14,6 +14,7 @@ class LabeledData(BaseModel):
     language_iso: str = ""
     label_text: str = ""
     values: list[Option] = list()
+    empty_value: bool = False
     source_text: str = ""
     page_width: float = 0
     page_height: float = 0
