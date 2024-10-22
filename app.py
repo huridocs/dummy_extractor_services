@@ -11,6 +11,7 @@ from starlette.responses import PlainTextResponse
 
 from data.ExtractionData import ExtractionData
 from data.LabeledData import LabeledData
+from data.Options import Options
 from data.PredictionData import PredictionData
 from data.SegmentBox import SegmentBox
 from data.Suggestion import Suggestion
@@ -19,6 +20,7 @@ app = FastAPI()
 
 data_path = Path("data.json")
 params_path = Path("params.json")
+options_path = Path("options.json")
 
 
 @app.get("/info")
@@ -84,6 +86,10 @@ async def get_suggestions(tenant: str, extractor_id: str):
 
     suggestions_list = list()
     params = json.loads(params_path.read_text()) if exists(params_path) else dict()
+    params["options"] = params["options"] if params and "options" in params else list()
+    if options_path.exists() and not params["options"]:
+        params["options"] = json.loads(options_path.read_text())
+
     all_values = params["options"] if params and "options" in params else list()
     multi_value = params["multi_value"] if params and "multi_value" in params else False
 
@@ -112,3 +118,9 @@ async def get_suggestions(tenant: str, extractor_id: str):
 
     sleep(5)
     return json.dumps(suggestions_list)
+
+@app.post("/options")
+def save_options(options: Options):
+    options_list = [option.model_dump() for option in options.options]
+    options_path.write_text(json.dumps(options_list))
+    return True
