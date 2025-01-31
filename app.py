@@ -12,6 +12,10 @@ from starlette.responses import PlainTextResponse
 from data.ExtractionData import ExtractionData
 from data.LabeledData import LabeledData
 from data.Options import Options
+from data.ParagraphExtractorParams import ParagraphExtractorParams
+from data.ParagraphTranslation import ParagraphTranslation
+from data.ParagraphTranslations import ParagraphTranslations
+from data.ParagraphsTranslations import ParagraphsTranslations
 from data.PredictionData import PredictionData
 from data.SegmentBox import SegmentBox
 from data.Suggestion import Suggestion
@@ -31,6 +35,7 @@ async def info():
 @app.post("/async_extraction/{tenant}")
 async def async_extraction(tenant, file: UploadFile = File(...)):
     return "task registered"
+
 
 @app.post("/set_paragraphs")
 async def set_paragraphs(extraction_data: ExtractionData):
@@ -56,6 +61,7 @@ async def get_xml():
 
 
 @app.post("/xml_to_train/{tenant}/{extractor_id}")
+@app.post("/extract_paragraphs_xml/{tenant}/{extractor_id}")
 async def to_train_xml_file(tenant, extractor_id, file: UploadFile = File(...)):
     print("received file to train", tenant, extractor_id)
     return "xml_to_train saved"
@@ -68,6 +74,7 @@ async def to_predict_xml_file(tenant, extractor_id, file: UploadFile = File(...)
 
 
 @app.post("/labeled_data")
+@app.post("/segmentation")
 async def labeled_data_post(labeled_data: LabeledData):
     return "labeled data saved"
 
@@ -118,6 +125,42 @@ async def get_suggestions(tenant: str, extractor_id: str):
 
     sleep(5)
     return json.dumps(suggestions_list)
+
+
+@app.get("/get_paragraphs_translations/{tenant}")
+async def get_paragraphs_translations(tenant: str):
+    paragraph_extractor_params = ParagraphExtractorParams(**json.loads(params_path.read_text()))
+
+    main_language = [x.language for x in paragraph_extractor_params.xmls if x.is_main_xml][0]
+    languages = [x.language for x in paragraph_extractor_params.xmls]
+
+    paragraphs: list[ParagraphTranslations] = list()
+    for i in range(2):
+        translations = list()
+        for language in languages:
+            translation = ParagraphTranslation(language=language,
+                                               text=f"paragraph {i} in {language}",
+                                               needs_user_review=False)
+            translations.append(translation)
+
+        paragraph = ParagraphTranslations(position=i + 1,
+                                          translations=translations)
+        paragraphs.append(paragraph)
+
+    paragraphs_translations = ParagraphsTranslations(tenant=tenant,
+                                                     extraction_id=paragraph_extractor_params.extractor_id,
+                                                     entity_id=paragraph_extractor_params.entity_id,
+                                                     main_language=main_language,
+                                                     available_languages=languages,
+                                                     paragraphs=paragraphs
+                                                     )
+
+    if exists(params_path):
+        os.remove(params_path)
+
+    sleep(5)
+    return paragraphs_translations.model_dump_json()
+
 
 @app.post("/options")
 def save_options(options: Options):
