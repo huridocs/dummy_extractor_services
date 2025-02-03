@@ -1,19 +1,13 @@
 from pydantic import BaseModel
 
-
-class XmlSegmentBox(BaseModel):
-    left: float
-    top: float
-    width: float
-    height: float
-    page_number: int
+from data.SegmentBox import SegmentBox
 
 
 class XmlData(BaseModel):
     xml_file_name: str
     language: str
     main_language: bool
-    xml_segments_boxes: list[XmlSegmentBox]
+    xml_segments_boxes: list[SegmentBox]
 
 
 class ParagraphExtractionData(BaseModel):
