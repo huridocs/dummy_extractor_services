@@ -3,6 +3,7 @@ from queue_processor.QueueProcessor import QueueProcessor
 from data.ExtractionMessage import ExtractionMessage
 from data.Task import Task
 
+
 def process(message):
     task = Task(**message)
     print(task.model_dump())

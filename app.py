@@ -6,19 +6,22 @@ from os.path import exists
 from pathlib import Path
 from time import sleep
 
-from fastapi import FastAPI, UploadFile, File
+from fastapi import FastAPI, UploadFile, File, Form
+from queue_processor.QueueProcessor import QueueProcessor
 from starlette.responses import PlainTextResponse
 
 from data.ExtractionData import ExtractionData
 from data.LabeledData import LabeledData
 from data.Options import Options
-from data.ParagraphExtractorParams import ParagraphExtractorParams
+from data.ParagraphExtractionData import ParagraphExtractionData
+from data.ParagraphExtractionResultsMessage import ParagraphExtractionResultsMessage
 from data.ParagraphTranslation import ParagraphTranslation
 from data.ParagraphTranslations import ParagraphTranslations
 from data.ParagraphsTranslations import ParagraphsTranslations
 from data.PredictionData import PredictionData
 from data.SegmentBox import SegmentBox
 from data.Suggestion import Suggestion
+from data.XML import XML
 
 app = FastAPI()
 
@@ -45,11 +48,9 @@ async def set_paragraphs(extraction_data: ExtractionData):
 @app.get("/get_paragraphs/{tenant}/{pdf_file_name}")
 async def get_paragraphs(tenant: str, pdf_file_name: str):
     print("get_paragraphs", tenant, pdf_file_name)
-    extraction_data = ExtractionData(tenant=tenant,
-                                     file_name=pdf_file_name,
-                                     paragraphs=[SegmentBox()],
-                                     page_height=0,
-                                     page_width=0)
+    extraction_data = ExtractionData(
+        tenant=tenant, file_name=pdf_file_name, paragraphs=[SegmentBox()], page_height=0, page_width=0
+    )
     return extraction_data.model_dump_json()
 
 
@@ -61,20 +62,16 @@ async def get_xml():
 
 
 @app.post("/xml_to_train/{tenant}/{extractor_id}")
-@app.post("/extract_paragraphs_xml/{tenant}/{extractor_id}")
 async def to_train_xml_file(tenant, extractor_id, file: UploadFile = File(...)):
-    print("received file to train", tenant, extractor_id)
     return "xml_to_train saved"
 
 
 @app.post("/xml_to_predict/{tenant}/{extractor_id}")
 async def to_predict_xml_file(tenant, extractor_id, file: UploadFile = File(...)):
-    print("received file to predict", tenant, extractor_id)
     return "xml_to_train saved"
 
 
 @app.post("/labeled_data")
-@app.post("/segmentation")
 async def labeled_data_post(labeled_data: LabeledData):
     return "labeled data saved"
 
@@ -109,9 +106,9 @@ async def get_suggestions(tenant: str, extractor_id: str):
                 id=extractor_id,
                 xml_file_name=prediction_data["xml_file_name"],
                 entity_name=prediction_data["entity_name"],
-                text="2023" if not values else ' '.join([option["label"] for option in values]),
+                text="2023" if not values else " ".join([option["label"] for option in values]),
                 values=values,
-                segment_text="2023" if not values else ' '.join([option["label"] for option in values]),
+                segment_text="2023" if not values else " ".join([option["label"] for option in values]),
                 page_number=1,
                 segments_boxes=[SegmentBox(left=0, top=0, width=250, height=250, page_number=1)],
             ).model_dump()
@@ -127,36 +124,52 @@ async def get_suggestions(tenant: str, extractor_id: str):
     return json.dumps(suggestions_list)
 
 
-@app.get("/get_paragraphs_translations/{tenant}")
-async def get_paragraphs_translations(tenant: str):
-    paragraph_extractor_params = ParagraphExtractorParams(**json.loads(params_path.read_text()))
+@app.post("/extract_paragraphs")
+async def extract_paragraphs(json_data: str = Form(...), xml_files: list[UploadFile] = File(...)):
+    paragraph_extraction_data = ParagraphExtractionData(**json.loads(json_data))
+    params_path.write_text(paragraph_extraction_data.model_dump_json())
+    for xml_file in xml_files:
+        print(f"Processing XML file: {xml_file.filename}")
 
-    main_language = [x.language for x in paragraph_extractor_params.xmls if x.is_main_xml][0]
-    languages = [x.language for x in paragraph_extractor_params.xmls]
+    print(f"Extracting paragraphs for {paragraph_extraction_data.model_dump_json()}")
+    queue_name = "development_extract_paragraphs_results"
+    result = ParagraphExtractionResultsMessage(
+        key=paragraph_extraction_data.key,
+        xmls=[
+            XML(xml_file_name=x.xml_file_name, language=x.language, is_main_xml=x.main_language)
+            for x in paragraph_extraction_data.xmls
+        ],
+        success=True,
+        error_message="",
+        data_url=f"http://127.0.0.1:5056/get_paragraphs_translations/{paragraph_extraction_data.key}",
+    )
+    queue = QueueProcessor("127.0.0.1", 6379, []).get_queue(queue_name)
+    queue.sendMessage().message(result.model_dump()).execute()
+    return "ok"
+
+
+@app.get("/get_paragraphs_translations/{key}")
+async def get_paragraphs_translations(key: str):
+    paragraph_extraction_data = ParagraphExtractionData(**json.loads(params_path.read_text()))
+
+    main_language = [x.language for x in paragraph_extraction_data.xmls if x.main_language][0]
+    languages = [x.language for x in paragraph_extraction_data.xmls]
 
     paragraphs: list[ParagraphTranslations] = list()
     for i in range(2):
         translations = list()
         for language in languages:
-            translation = ParagraphTranslation(language=language,
-                                               text=f"paragraph {i} in {language}",
-                                               needs_user_review=False)
+            translation = ParagraphTranslation(
+                language=language, text=f"paragraph {i} in {language}", needs_user_review=False
+            )
             translations.append(translation)
 
-        paragraph = ParagraphTranslations(position=i + 1,
-                                          translations=translations)
+        paragraph = ParagraphTranslations(position=i + 1, translations=translations)
         paragraphs.append(paragraph)
 
-    paragraphs_translations = ParagraphsTranslations(tenant=tenant,
-                                                     extraction_id=paragraph_extractor_params.extractor_id,
-                                                     entity_id=paragraph_extractor_params.entity_id,
-                                                     main_language=main_language,
-                                                     available_languages=languages,
-                                                     paragraphs=paragraphs
-                                                     )
-
-    if exists(params_path):
-        os.remove(params_path)
+    paragraphs_translations = ParagraphsTranslations(
+        key=key, main_language=main_language, available_languages=languages, paragraphs=paragraphs
+    )
 
     sleep(5)
     return paragraphs_translations.model_dump_json()
