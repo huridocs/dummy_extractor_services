@@ -172,7 +172,7 @@ async def get_paragraphs_translations(key: str):
     )
 
     sleep(5)
-    return paragraphs_translations.model_dump_json()
+    return paragraphs_translations
 
 
 @app.post("/options")
