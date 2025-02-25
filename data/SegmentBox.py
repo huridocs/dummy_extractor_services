@@ -12,4 +12,4 @@ class SegmentBox(BaseModel):
     # page_width: int = 600
     # page_height: int = 800
     # text: str = ""
-    # type: str = "TEXT"
+    segment_type: TokenType = TokenType.TEXT

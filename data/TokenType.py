@@ -1,7 +1,7 @@
-from enum import Enum
+from enum import StrEnum
 
 
-class TokenType(Enum):
+class TokenType(StrEnum):
     FORMULA = "Formula"
     FOOTNOTE = "Footnote"
     LIST_ITEM = "List item"
@@ -17,7 +17,7 @@ class TokenType(Enum):
     @staticmethod
     def from_text(text: str):
         try:
-            return TokenType[text.upper()]
+            return TokenType[text.replace(" ", "_").upper()]
         except KeyError:
             return TokenType.TEXT
 
