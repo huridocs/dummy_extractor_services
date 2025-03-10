@@ -6,7 +6,8 @@ from data.SegmentBox import SegmentBox
 class XmlData(BaseModel):
     xml_file_name: str
     language: str
-    main_language: bool
+    is_main_language: bool = False
+    main_language: bool = False
     xml_segments_boxes: list[SegmentBox]
 
 
