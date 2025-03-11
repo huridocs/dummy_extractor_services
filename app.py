@@ -136,7 +136,7 @@ async def extract_paragraphs(json_data: str = Form(...), xml_files: list[UploadF
     result = ParagraphExtractionResultsMessage(
         key=paragraph_extraction_data.key,
         xmls=[
-            XML(xml_file_name=x.xml_file_name, language=x.language, is_main_xml=x.main_language)
+            XML(xml_file_name=x.xml_file_name, language=x.language, is_main_xml=x.is_main_language)
             for x in paragraph_extraction_data.xmls
         ],
         success=True,
@@ -152,7 +152,7 @@ async def extract_paragraphs(json_data: str = Form(...), xml_files: list[UploadF
 async def get_paragraphs_translations(key: str):
     paragraph_extraction_data = ParagraphExtractionData(**json.loads(params_path.read_text()))
 
-    main_language = [x.language for x in paragraph_extraction_data.xmls if x.main_language][0]
+    main_language = [x.language for x in paragraph_extraction_data.xmls if x.is_main_language][0]
     languages = [x.language for x in paragraph_extraction_data.xmls]
 
     paragraphs: list[ParagraphTranslations] = list()
