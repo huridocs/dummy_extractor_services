@@ -160,7 +160,26 @@ async def get_paragraphs_translations(key: str):
         translations = list()
         for language in languages:
             translation = ParagraphTranslation(
-                language=language, text=f"paragraph {i} in {language}", needs_user_review=False
+                language=language, text=f"For e2e paragraph {i} in {language}", needs_user_review=False
+            )
+            translations.append(translation)
+
+        paragraph = ParagraphTranslations(position=i + 1, translations=translations)
+        paragraphs.append(paragraph)
+
+    long_text = """
+    Strengthen efforts to address violence against women, against 
+    children and against all persons on the basis of their sexual 
+    orientation and gender identity, including measures to prevent 
+    violence and support survivors, as well as by removing obstacles 
+    that prevent access to justice
+    """
+
+    for i in range(random.randint(1, 5)):
+        translations = list()
+        for language in languages:
+            translation = ParagraphTranslation(
+                language=language, text=f"Text for language {language}; {long_text}", needs_user_review=True
             )
             translations.append(translation)
 
@@ -171,7 +190,7 @@ async def get_paragraphs_translations(key: str):
         key=key, main_language=main_language, available_languages=languages, paragraphs=paragraphs
     )
 
-    sleep(5)
+    sleep(3)
     return paragraphs_translations
 
 
