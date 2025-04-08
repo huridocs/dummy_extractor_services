@@ -165,7 +165,7 @@ async def get_paragraphs_translations(key: str):
     that prevent access to justice
     """
 
-    for i in range(random.randint(3, 6)):
+    for i in range(random.randint(3, 25)):
         translations = list()
         for language in languages:
             text = f"For e2e paragraph {i} in {language}" if i < 2 else f"Text for language {language}; {long_text}"
