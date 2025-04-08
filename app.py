@@ -156,16 +156,6 @@ async def get_paragraphs_translations(key: str):
     languages = [x.language for x in paragraph_extraction_data.xmls]
 
     paragraphs: list[ParagraphTranslations] = list()
-    for i in range(2):
-        translations = list()
-        for language in languages:
-            translation = ParagraphTranslation(
-                language=language, text=f"For e2e paragraph {i} in {language}", needs_user_review=False
-            )
-            translations.append(translation)
-
-        paragraph = ParagraphTranslations(position=i + 1, translations=translations)
-        paragraphs.append(paragraph)
 
     long_text = """
     Strengthen efforts to address violence against women, against 
@@ -175,11 +165,12 @@ async def get_paragraphs_translations(key: str):
     that prevent access to justice
     """
 
-    for i in range(random.randint(1, 5)):
+    for i in range(random.randint(3, 6)):
         translations = list()
         for language in languages:
+            text = f"For e2e paragraph {i} in {language}" if i < 2 else f"Text for language {language}; {long_text}"
             translation = ParagraphTranslation(
-                language=language, text=f"Text for language {language}; {long_text}", needs_user_review=True
+                language=language, text=text, needs_user_review=False
             )
             translations.append(translation)
 
