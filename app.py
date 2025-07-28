@@ -100,19 +100,12 @@ async def get_suggestions(tenant: str, extractor_id: str):
     for prediction_data in predictions_data:
         values_count = random.randint(1, len(all_values)) if multi_value else 1
         values = random.sample(all_values, k=values_count) if all_values else list()
-        
-        # For multiselect, create objects with id, label, and segment_text
-        if multi_value and values:
-            formatted_values = []
-            for option in values:
-                formatted_values.append({
-                    "id": option["id"],
-                    "label": option["label"],
-                    "segment_text": f"Context for: {option['label']}"
-                })
-        else:
-            formatted_values = values
-            
+        formatted_values = []
+        for option in values:
+            formatted_values.append(
+                {"id": option["id"], "label": option["label"], "segment_text": f"Context for: {option['label']}"}
+            )
+
         suggestions_list.append(
             Suggestion(
                 tenant=tenant,
@@ -182,9 +175,7 @@ async def get_paragraphs_translations(key: str):
         translations = list()
         for language in languages:
             text = f"For e2e paragraph {i} in {language}" if i < 2 else f"Text for language {language}; {long_text}"
-            translation = ParagraphTranslation(
-                language=language, text=text, needs_user_review=False
-            )
+            translation = ParagraphTranslation(language=language, text=text, needs_user_review=False)
             translations.append(translation)
 
         paragraph = ParagraphTranslations(position=i + 1, translations=translations)
