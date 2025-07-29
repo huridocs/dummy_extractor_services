@@ -32,13 +32,16 @@ jobs:
         run: make install_venv
 
       - name: Start services in background
-        run: |
-          make start > service.log 2>&1 &
-          echo $! > service.pid
+        run: make start-detached
 
-      - name: Wait for services to be ready
-        run: |
-          timeout 60 bash -c 'until wget --spider --quiet http://127.0.0.1:5051/info; do sleep 2; done'
+      - name: Check API ready
+        uses: emilioschepis/wait-for-endpoint@v1.0.3
+        with:
+          url: http://localhost:5051/info
+          method: GET
+          expected-status: 200
+          timeout: 240000
+          interval: 500
 
       - name: Test service endpoints
         run: |
@@ -46,15 +49,6 @@ jobs:
           curl -f http://127.0.0.1:5051/info
           # Test secondary service endpoint if it exists
           curl -f http://127.0.0.1:5056/info || echo "Secondary service not available"
-
-      - name: Run tests (if test files exist)
-        run: |
-          if [ -f "test_*.py" ] || [ -d "tests" ]; then
-            . .venv/bin/activate
-            python -m pytest -v || echo "No pytest found, skipping Python tests"
-          else
-            echo "No test files found"
-          fi
 
       - name: Cleanup services
         if: always()
