@@ -100,6 +100,12 @@ async def get_suggestions(tenant: str, extractor_id: str):
     for prediction_data in predictions_data:
         values_count = random.randint(1, len(all_values)) if multi_value else 1
         values = random.sample(all_values, k=values_count) if all_values else list()
+        formatted_values = []
+        for option in values:
+            formatted_values.append(
+                {"id": option["id"], "label": option["label"], "segment_text": f"Context for: {option['label']}"}
+            )
+
         suggestions_list.append(
             Suggestion(
                 tenant=tenant,
@@ -107,7 +113,7 @@ async def get_suggestions(tenant: str, extractor_id: str):
                 xml_file_name=prediction_data["xml_file_name"],
                 entity_name=prediction_data["entity_name"],
                 text="2023" if not values else " ".join([option["label"] for option in values]),
-                values=values,
+                values=formatted_values,
                 segment_text="2023" if not values else " ".join([option["label"] for option in values]),
                 page_number=1,
                 segments_boxes=[SegmentBox(left=0, top=0, width=250, height=250, page_number=1)],
@@ -169,9 +175,7 @@ async def get_paragraphs_translations(key: str):
         translations = list()
         for language in languages:
             text = f"For e2e paragraph {i} in {language}" if i < 2 else f"Text for language {language}; {long_text}"
-            translation = ParagraphTranslation(
-                language=language, text=text, needs_user_review=False
-            )
+            translation = ParagraphTranslation(language=language, text=text, needs_user_review=False)
             translations.append(translation)
 
         paragraph = ParagraphTranslations(position=i + 1, translations=translations)
@@ -187,6 +191,12 @@ async def get_paragraphs_translations(key: str):
 
 @app.post("/options")
 def save_options(options: Options):
-    options_list = [option.model_dump() for option in options.options]
+    options_list = []
+    for option in options.options:
+        option_dict = option.model_dump()
+        # Ensure segment_text is included
+        if "segment_text" not in option_dict:
+            option_dict["segment_text"] = f"Option: {option_dict.get('label', '')}"
+        options_list.append(option_dict)
     options_path.write_text(json.dumps(options_list))
     return True

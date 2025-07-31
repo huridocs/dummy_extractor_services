@@ -30,5 +30,8 @@ start_inside_docker:
 docker:
 	docker compose up --build
 
+start-detached:
+	docker compose up --build -d
+
 formatter:
 	. .venv/bin/activate; command black --line-length 125 .
