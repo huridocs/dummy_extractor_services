@@ -103,7 +103,11 @@ async def get_suggestions(tenant: str, extractor_id: str):
         formatted_values = []
         for option in values:
             formatted_values.append(
-                {"id": option["id"], "label": option["label"], "segment_text": f"Context for: {option['label']}"}
+                {
+                    "id": option["id"],
+                    "label": option["label"],
+                    "segment_text": f'<p class="ix_paragraph">Context for {option["label"]}</p>',
+                }
             )
 
         if values:
