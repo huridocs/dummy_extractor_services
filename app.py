@@ -106,6 +106,11 @@ async def get_suggestions(tenant: str, extractor_id: str):
                 {"id": option["id"], "label": option["label"], "segment_text": f"Context for: {option['label']}"}
             )
 
+        if values:
+            segment_text = "".join([f'<p class="ix_paragraph">{option["label"]}</p>' for option in values])
+        else:
+            segment_text = '<p class="ix_adjacent_paragraph">Header</p><p class="ix_matching_paragraph">Meeting <span class="ix_match">2023</span></p><p class="ix_matching_paragraph">Report <span class="ix_match">2023</span></p><p class="ix_adjacent_paragraph">Closing</p>'
+
         suggestions_list.append(
             Suggestion(
                 tenant=tenant,
@@ -114,7 +119,7 @@ async def get_suggestions(tenant: str, extractor_id: str):
                 entity_name=prediction_data["entity_name"],
                 text="2023" if not values else " ".join([option["label"] for option in values]),
                 values=formatted_values,
-                segment_text="2023" if not values else " ".join([option["label"] for option in values]),
+                segment_text=segment_text,
                 page_number=1,
                 segments_boxes=[SegmentBox(left=0, top=0, width=250, height=250, page_number=1)],
             ).model_dump()
