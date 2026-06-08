@@ -14,6 +14,7 @@ start:
 	. .venv/bin/activate; python -m pip install -r requirements.txt
 	. .venv/bin/activate; command gunicorn -k uvicorn.workers.UvicornWorker app:app --bind 0.0.0.0:5051 & \
 	command gunicorn -k uvicorn.workers.UvicornWorker app:app --bind 0.0.0.0:5056 & \
+	command gunicorn -k uvicorn.workers.UvicornWorker app:app --bind 0.0.0.0:5054 & \
 	command python -m worker_metadata & \
 	command python -m worker_paragraphs & \
 	command python -m worker_translations
@@ -21,6 +22,7 @@ start:
 start_inside_docker:
 	command gunicorn -k uvicorn.workers.UvicornWorker app:app --bind 0.0.0.0:5051 & \
 	command gunicorn -k uvicorn.workers.UvicornWorker app:app --bind 0.0.0.0:5056 & \
+	command gunicorn -k uvicorn.workers.UvicornWorker app:app --bind 0.0.0.0:5054 & \
 	command python -m worker_metadata & \
 	command python -m worker_paragraphs & \
 	command python -m worker_translations
