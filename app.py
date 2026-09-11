@@ -6,9 +6,11 @@ from os.path import exists
 from pathlib import Path
 from time import sleep
 
-from fastapi import FastAPI, UploadFile, File, Form
+from fastapi import FastAPI, HTTPException, UploadFile, File, Form, Query
 from queue_processor.QueueProcessor import QueueProcessor
 from starlette.responses import PlainTextResponse
+
+from sync_translate import get_translated_text
 
 from data.ExtractionData import ExtractionData
 from data.LabeledData import LabeledData
@@ -33,6 +35,32 @@ options_path = Path("options.json")
 @app.get("/info")
 async def info():
     return sys.version
+
+
+@app.post("/translate")
+async def translate(
+    text: str = Query(..., min_length=1),
+    language_from: str = Query(..., min_length=1),
+    language_to: str = Query(..., min_length=1),
+):
+    """
+    Sync translate stub for Uwazi translationService (POST /api/translationService).
+
+    Special cases:
+    - text=error or language_to=error → HTTP 500
+    - text=empty → 200 with {} (missing translated_text)
+    - known phrases → fixed stubs for en/fr/es/ru/ar
+    - anything else → "[translation for {language_to}] {text}"
+    """
+    if text.strip().lower() == "error" or language_to.strip().lower() == "error":
+        raise HTTPException(status_code=500, detail="translation failed")
+
+    if text.strip().lower() == "empty":
+        return {}
+
+    return {
+        "translated_text": get_translated_text(text, language_from, language_to),
+    }
 
 
 @app.post("/async_extraction/{tenant}")
