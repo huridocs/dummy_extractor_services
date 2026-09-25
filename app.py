@@ -12,6 +12,10 @@ from starlette.responses import PlainTextResponse
 
 from sync_translate import get_translated_text
 
+from data.AIJobRequest import AIJobRequest
+from data.AIJobResponse import AIJobResponse
+from data.AIJobStatus import AIJobStatus
+from data.AIJobStatusResponse import AIJobStatusResponse
 from data.ExtractionData import ExtractionData
 from data.LabeledData import LabeledData
 from data.Options import Options
@@ -30,6 +34,44 @@ app = FastAPI()
 data_path = Path("data.json")
 params_path = Path("params.json")
 options_path = Path("options.json")
+
+jobs_store: dict[str, AIJobStatusResponse] = {}
+
+
+@app.post("/api/v1/jobs")
+async def create_job(request: AIJobRequest) -> AIJobResponse:
+    job_id = request.job_id or str(random.randint(100000, 999999))
+    result_markdown = "Using the **Template Inspector** tool to analyze the template structure."
+    jobs_store[job_id] = AIJobStatusResponse(job_id=job_id, status=AIJobStatus.RUNNING, result=result_markdown)
+    return AIJobResponse(job_id=job_id, message=request.message, status=AIJobStatus.PENDING)
+
+
+@app.get("/api/v1/jobs/{job_id}")
+async def get_job(job_id: str) -> AIJobStatusResponse:
+    job = jobs_store.get(job_id, AIJobStatusResponse(job_id=job_id, status=AIJobStatus.FAILED)).model_copy()
+    if job.status == AIJobStatus.RUNNING:
+        result_markdown = """
+        ## Task Execution Summary
+
+        I have completed the requested operation by leveraging the following tools:
+
+        ### Tools Used
+
+        1. **Template Inspector** — Loaded and parsed the target template definition to identify its structure and bound entities.
+        2. **Entity Remover** — Removed the specified entities from the underlying data store, ensuring referential integrity was preserved.
+
+        ### Results
+
+        | Step | Tool | Status |
+        |------|------|--------|
+        | 1 | Template Inspector | Completed |
+        | 2 | Entity Remover | Completed |
+
+        > All operations finished successfully. No further action is required.
+            """
+        jobs_store[job_id] = AIJobStatusResponse(job_id=job_id, status=AIJobStatus.COMPLETED, result=result_markdown)
+
+    return job
 
 
 @app.get("/info")
@@ -131,8 +173,17 @@ async def get_suggestions(tenant: str, extractor_id: str):
         formatted_values = []
         for option in values:
             formatted_values.append(
-                {"id": option["id"], "label": option["label"], "segment_text": f"Context for: {option['label']}"}
+                {
+                    "id": option["id"],
+                    "label": option["label"],
+                    "segment_text": f'<p class="ix_paragraph">Context for {option["label"]}</p>',
+                }
             )
+
+        if values:
+            segment_text = "".join([f'<p class="ix_paragraph">{option["label"]}</p>' for option in values])
+        else:
+            segment_text = '<p class="ix_adjacent_paragraph">Header</p><p class="ix_matching_paragraph">Meeting <span class="ix_match">2023</span></p><p class="ix_matching_paragraph">Report <span class="ix_match">2023</span></p><p class="ix_adjacent_paragraph">Closing</p>'
 
         suggestions_list.append(
             Suggestion(
@@ -142,7 +193,7 @@ async def get_suggestions(tenant: str, extractor_id: str):
                 entity_name=prediction_data["entity_name"],
                 text="2023" if not values else " ".join([option["label"] for option in values]),
                 values=formatted_values,
-                segment_text="2023" if not values else " ".join([option["label"] for option in values]),
+                segment_text=segment_text,
                 page_number=1,
                 segments_boxes=[SegmentBox(left=0, top=0, width=250, height=250, page_number=1)],
             ).model_dump()
