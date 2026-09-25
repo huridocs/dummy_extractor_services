@@ -1,6 +1,6 @@
-FROM python:3.12.4-slim-bullseye
+FROM python:3.12-slim-bookworm
 
-RUN apt-get update && apt-get install make git -y
+RUN apt-get update && apt-get install -y --no-install-recommends make git && rm -rf /var/lib/apt/lists/*
 RUN addgroup --system python && adduser --system --group python
 RUN mkdir opt/app
 RUN chown -R python:python opt/app
@@ -18,6 +18,7 @@ RUN pip --default-timeout=1000 install -r requirements.txt
 
 COPY ./data ./data
 COPY app.py app.py
+COPY sync_translate.py sync_translate.py
 COPY test.xml test.xml
 COPY worker_metadata.py worker_metadata.py
 COPY worker_paragraphs.py worker_paragraphs.py

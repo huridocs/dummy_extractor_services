@@ -229,6 +229,9 @@ async def extract_paragraphs(json_data: str = Form(...), xml_files: list[UploadF
         data_url=f"http://127.0.0.1:5056/get_paragraphs_translations/{paragraph_extraction_data.key}",
     )
     queue = QueueProcessor("127.0.0.1", 6379, []).get_queue(queue_name)
+    # Uwazi's TaskManager consumes this queue; create it up-front so a cold dummy service
+    # does not fail with QueueDoesNotExist (nothing else declares it).
+    queue.createQueue().vt(120).exceptions(False).execute()
     queue.sendMessage().message(result.model_dump()).execute()
     return "ok"
 

@@ -50,6 +50,9 @@ jobs:
           # Test secondary service endpoint if it exists
           curl -f http://127.0.0.1:5056/info || echo "Secondary service not available"
 
+      - name: Test /translate endpoint (Uwazi translationService contract)
+        run: .venv/bin/python scripts/check_translate_endpoint.py
+
       - name: Cleanup services
         if: always()
         run: |
