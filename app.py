@@ -25,6 +25,7 @@ from data.ParagraphTranslation import ParagraphTranslation
 from data.ParagraphTranslations import ParagraphTranslations
 from data.ParagraphsTranslations import ParagraphsTranslations
 from data.PredictionData import PredictionData
+from data.TranslateTextRequest import TranslateTextRequest
 from data.SegmentBox import SegmentBox
 from data.Suggestion import Suggestion
 from data.XML import XML
@@ -102,6 +103,17 @@ async def translate(
 
     return {
         "translated_text": get_translated_text(text, language_from, language_to),
+    }
+
+
+@app.post("/translate/text")
+async def translate_text(request: TranslateTextRequest):
+    """JSON-body translate stub: POST /translate/text {"text", "language_from", "language_to"}."""
+    if request.text.strip().lower() == "error" or request.language_to.strip().lower() == "error":
+        raise HTTPException(status_code=500, detail="translation failed")
+
+    return {
+        "translated_text": get_translated_text(request.text, request.language_from, request.language_to),
     }
 
 
